@@ -194,8 +194,8 @@ public class JobFailMonitorHelper {
 		}
 
 		// do something, custom alarm strategy, such as sms
+        logger.warn(">>>>>>>>>>> xxl-job, job fail alarm prometheus error, JobLogId:{}", jobLog.getId());
         Metrics.counter("xxl_job_excutor_error","excutorHandler",info.getExecutorHandler()).increment();
-
 		return alarmResult;
 	}
 
