@@ -7,6 +7,9 @@ import com.xxl.job.admin.core.model.XxlJobLog;
 import com.xxl.job.admin.core.trigger.TriggerTypeEnum;
 import com.xxl.job.admin.core.util.I18nUtil;
 import com.xxl.job.core.biz.model.ReturnT;
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.prometheus.client.Counter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -26,13 +29,19 @@ import java.util.concurrent.TimeUnit;
  */
 public class JobFailMonitorHelper {
 	private static Logger logger = LoggerFactory.getLogger(JobFailMonitorHelper.class);
-	
+
 	private static JobFailMonitorHelper instance = new JobFailMonitorHelper();
 	public static JobFailMonitorHelper getInstance(){
 		return instance;
 	}
 
-	// ---------------------- monitor ----------------------
+    public static io.prometheus.client.Counter counter = Counter.build()
+            .name("xxl_job_error")
+            .help("xxl_job error")
+            .labelNames("name")
+            .register(new PrometheusMeterRegistry(PrometheusConfig.DEFAULT).getPrometheusRegistry());
+
+    // ---------------------- monitor ----------------------
 
 	private Thread monitorThread;
 	private volatile boolean toStop = false;
@@ -193,7 +202,7 @@ public class JobFailMonitorHelper {
 		}
 
 		// do something, custom alarm strategy, such as sms
-
+        counter.labels(info.getExecutorHandler()).inc();
 
 		return alarmResult;
 	}
